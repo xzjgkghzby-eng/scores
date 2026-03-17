@@ -1174,3 +1174,4 @@ function pReset() { PS.joueurs.forEach(j => { j.score = 0; j.nb = 0; }); PS.hist
 </script>
 </body>
 </html>
+
