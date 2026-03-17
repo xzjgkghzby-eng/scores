@@ -8,7 +8,12 @@
     <meta name="apple-mobile-web-app-title" content="Jeux de cartes">
     <meta name="theme-color" content="#FF6B00">
     <title>🃏 Jeux de cartes</title>
+    
+    <!-- ICÔNE IPHONE -->
     <link rel="apple-touch-icon" href="./icon-192.png">
+    <!-- LIEN VERS LE MANIFEST -->
+    <link rel="manifest" href="./manifest.json">
+
     <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f2f2f7; color: #1c1c1e; min-height: 100vh; padding-bottom: 40px; }
@@ -149,7 +154,6 @@ canvas { width: 100%; border-radius: 10px; display: block; }
   </div>
 </div>
 
-
 <!-- ══ TAROT SETUP ══ -->
 <div id="screen-tarot-setup" class="screen">
   <div class="nav"><div><h1>🎴 Tarot</h1><small style="color:#8e8e93">Configuration</small></div><button class="back-btn" style="color:#FF6B00" onclick="goHome()">← Accueil</button></div>
@@ -222,7 +226,6 @@ canvas { width: 100%; border-radius: 10px; display: block; }
   <div class="main-content container">
     <div class="card"><div class="card-title">Calcul</div>
       <div class="toggle-row"><span class="lbl">Pousse ×1.5</span><label class="ios-toggle"><input type="checkbox" id="tr-opt-pousse"><span class="slider-t"></span></label></div>
-      <div class="toggle-row"><span class="lbl">Demi-points</span><label class="ios-toggle"><input type="checkbox" id="tr-opt-demi" checked><span class="slider-t"></span></label></div>
     </div>
     <div class="card"><div class="card-title">Partie</div>
       <button class="btn btn-red"  onclick="confirmReset('tarot')">🔄 Remettre à zéro</button>
@@ -500,7 +503,6 @@ function drawGraph(canvasId, joueurs, historique, limiteLine) {
   const hist = [...historique].reverse();
   const nM = hist.length;
 
-  // Construire courbes cumulées
   const curves = Array(nb).fill(0).map(() => [0]);
   hist.forEach(m => {
     m.scores.forEach((s, i) => {
@@ -516,7 +518,6 @@ function drawGraph(canvasId, joueurs, historique, limiteLine) {
 
   ctx.clearRect(0, 0, W, H);
 
-  // Grille
   for (let i = 0; i <= 4; i++) {
     const y = PT + (gH / 4) * i;
     ctx.strokeStyle = '#ebebeb'; ctx.lineWidth = 1;
@@ -526,7 +527,6 @@ function drawGraph(canvasId, joueurs, historique, limiteLine) {
     ctx.fillText(Math.round(val * 10) / 10, PL - 4, y + 4);
   }
 
-  // Ligne limite (Dutch)
   if (limiteLine != null && limiteLine >= mn && limiteLine <= mx) {
     const yL = PT + ((mx - limiteLine) / rng) * gH;
     ctx.strokeStyle = '#ff3b30'; ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]);
@@ -536,7 +536,6 @@ function drawGraph(canvasId, joueurs, historique, limiteLine) {
     ctx.fillText('Limite ' + limiteLine, PL + 2, yL - 3);
   }
 
-  // Courbes
   curves.forEach((pts, i) => {
     const col = COL[i % COL.length];
     ctx.strokeStyle = col; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
@@ -548,19 +547,16 @@ function drawGraph(canvasId, joueurs, historique, limiteLine) {
       x === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
     });
     ctx.stroke();
-    // Point final
     const lx = PL + (nM > 0 ? ((pts.length - 1) / nM) * gW : 0);
     const ly = PT + ((mx - pts[pts.length - 1]) / rng) * gH;
     ctx.beginPath(); ctx.arc(lx, ly, 4, 0, Math.PI * 2);
     ctx.fillStyle = col; ctx.fill();
-    // Label
     const nom = joueurs[i] ? joueurs[i].nom : 'J' + (i + 1);
     ctx.font = 'bold 11px -apple-system,sans-serif'; ctx.fillStyle = col; ctx.textAlign = 'left';
     const tw = ctx.measureText(nom).width;
     ctx.fillText(nom, Math.min(lx + 6, W - PR - tw - 4), ly + (i % 2 === 0 ? -6 : 10));
   });
 
-  // Légende bas
   ctx.textAlign = 'left'; ctx.font = '10px -apple-system,sans-serif';
   let lx = PL;
   joueurs.forEach((j, i) => {
@@ -607,7 +603,6 @@ function updateSugg(prefix, i, nomsKey, color, n) {
   const filtered = getNoms(nomsKey).filter(nm => (val === '' || nm.toLowerCase().startsWith(val)) && !used.includes(nm.toLowerCase()));
   const div = document.getElementById(`${prefix}-sugg-${i}`); if (!div) return;
   div.innerHTML = filtered.map(nm => `<button class="sugg-chip" style="background:${color}18;color:${color};border-color:${color}44" onclick="pickNom('${prefix}',${i},'${nm}',${n})">${nm}</button>`).join('');
-  // Déclencher checkStart
   if (prefix === 'tr') tCheckStart();
   if (prefix === 'du') dCheckStart();
   if (prefix === 'pa') pCheckStart();
@@ -642,7 +637,7 @@ function doReset() {
 let TS = { n:4, joueurs:[], hist:[] };
 let tPoignees = [], tMiseres = [];
 const T_SEUILS = [56, 51, 41, 36];
-const T_POIGNEE_VALS = [[13,15,18],[10,13,15],[8,10,13]]; // 3j, 4j, 5j
+const T_POIGNEE_VALS = [[13,15,18],[10,13,15],[8,10,13]]; 
 
 function tSave() { localStorage.setItem('tarot_save', JSON.stringify(TS)); saveNoms('tarot_noms', TS.joueurs.slice(0, TS.n)); }
 function tLoad() {
@@ -673,7 +668,6 @@ function tInitUI() {
   tPoignees = Array(TS.n).fill(0);
   tMiseres  = Array(TS.n).fill(false);
 
-  // Preneur / Partenaire / PAB selects
   ['tr-preneur','tr-partenaire','tr-pab'].forEach(sid => {
     const sel = document.getElementById(sid); if (!sel) return;
     sel.innerHTML = sid === 'tr-pab' ? '<option value="-1">Personne</option>' : '';
@@ -692,7 +686,6 @@ function tInitUI() {
   document.getElementById('tr-chelem').selectedIndex = 0;
   document.getElementById('tr-pab').value = '-1';
 
-  // Poignées
   const pgDiv = document.getElementById('tr-poignees'); pgDiv.innerHTML = '';
   const pgVals = T_POIGNEE_VALS[TS.n - 3] || T_POIGNEE_VALS[1];
   const pgLabels = ['–', `Simple (${pgVals[0]}+)`, `Double (${pgVals[1]}+)`, `Triple (${pgVals[2]}+)`];
@@ -703,7 +696,6 @@ function tInitUI() {
     pgDiv.appendChild(row);
   });
 
-  // Misères
   const msDiv = document.getElementById('tr-miseres'); msDiv.innerHTML = '';
   TS.joueurs.forEach((j, i) => {
     const row = document.createElement('div'); row.className = 'prime-row';
@@ -763,14 +755,10 @@ function tValider() {
   const diff = Math.abs(pts - s);
   const gagne = pts >= s;
   
-  // 1. Base + Marge (Scénarios 1, 2, 3, 4, 5, 6, 8)
   let baseDef = 25 + diff;
 
-  // 2. Petit au bout (Scénarios 7, 10)
-  // Le Petit au bout s'ajoute avant la multiplication par le contrat
   if (pab >= 0) {
     const isAttaque = (pab === pi || (TS.n === 5 && pab === pai));
-    // S'il est remporté par l'équipe qui gagne la donne, on ajoute 10 pts. Sinon on les déduit.
     if ((gagne && isAttaque) || (!gagne && !isAttaque)) {
       baseDef += 10; 
     } else {
@@ -778,14 +766,9 @@ function tValider() {
     }
   }
 
-  // 3. Multiplication par le contrat
   let pointsDef = baseDef * co;
-
-  // Le signe des points du défenseur (Négatif si l'attaque gagne, Positif si l'attaque chute)
   pointsDef = gagne ? -pointsDef : pointsDef;
 
-  // 4. Poignée (Scénario 9) et Chelem
-  // Ces primes ne sont pas multipliées par le contrat et s'ajoutent à la fin
   const vChelem = [0, 400, 200, -200][ch] || 0;
   pointsDef += (gagne ? -vChelem : vChelem);
 
@@ -793,19 +776,16 @@ function tValider() {
   const att = TS.n === 5 && pai !== pi ? [pi, pai] : [pi];
   const def = Array.from({length: TS.n}, (_, i) => i).filter(i => !att.includes(i));
   
-  // 5. Distribution des points de base aux défenseurs
   def.forEach(d => gains[d] += pointsDef);
 
-  // 6. Calcul pour l'attaque (Preneur + Partenaire éventuel)
   const totalDef = -pointsDef * def.length;
   if (att.length === 2) {
-    gains[att[0]] += totalDef * 2 / 3; // Preneur : 2/3
-    gains[att[1]] += totalDef * 1 / 3; // Partenaire : 1/3
+    gains[att[0]] += totalDef * 2 / 3; 
+    gains[att[1]] += totalDef * 1 / 3; 
   } else {
-    gains[att[0]] += totalDef; // Preneur seul : 100%
+    gains[att[0]] += totalDef; 
   }
 
-  // 7. Primes individuelles de Poignée (la poignée est payée par les autres joueurs à celui qui la montre)
   const pgV = [0, 20, 30, 40];
   for (let i = 0; i < TS.n; i++) {
     if (tPoignees[i] > 0) {
@@ -814,7 +794,6 @@ function tValider() {
       gains[i] += valPoignee * others.length;
       others.forEach(o => gains[o] -= valPoignee);
     }
-    // Misères (10 pts)
     if (tMiseres[i]) {
       const others = Array.from({length: TS.n}, (_, j) => j).filter(j => j !== i);
       gains[i] += 10 * others.length;
@@ -822,7 +801,6 @@ function tValider() {
     }
   }
 
-  // 8. Option "La Pousse" (×1.5) et sauvegarde
   const pousse = document.getElementById('tr-opt-pousse')?.checked ? 1.5 : 1;
   for (let i = 0; i < TS.n; i++) {
     gains[i] = Math.round(gains[i] * pousse * 10) / 10;
@@ -840,8 +818,6 @@ function tValider() {
   });
 
   tSave(); tInitUI(); tRefreshClass();
-}
-
 }
 
 function tRefreshClass() {
@@ -1126,19 +1102,14 @@ function pRenderInputs() {
     <input type="number" class="score-input" id="pa-i-${i}" min="0" max="250" placeholder="pts" oninput="pCheckVal()">`;
     div.appendChild(row);
   }
-  // focus style
   document.querySelectorAll('#pa-score-inputs .score-input').forEach(el => {
     el.style.outline = 'none';
     el.addEventListener('focus', () => el.style.borderColor = '#FF9500');
     el.addEventListener('blur',  () => el.style.borderColor = '#e0e0e0');
   });
 }
-
 function pCheckVal() {
-  const vals = Array.from({length: PS.n}, (_, i) => {
-    const v = document.getElementById(`pa-i-${i}`)?.value;
-    return v === '' ? null : parseInt(v);
-  });
+  const vals = Array.from({length: PS.n}, (_, i) => { const v = document.getElementById(`pa-i-${i}`)?.value; return v === '' ? null : parseInt(v); });
   const allFilled = vals.every(v => v !== null && !isNaN(v));
   const total = allFilled ? vals.reduce((a, b) => a + b, 0) : vals.filter(v => v !== null && !isNaN(v)).reduce((a, b) => a + b, 0);
   const badge = document.getElementById('pa-total');
@@ -1148,19 +1119,14 @@ function pCheckVal() {
   const btn = document.getElementById('pa-valider');
   if (btn) btn.disabled = !(allFilled && total === 250);
 }
-
 function pRefreshUI() {
   const sorted = [...PS.joueurs].slice(0, PS.n).sort((a, b) => a.score - b.score);
   document.getElementById('pa-classement').innerHTML = sorted.map((j, r) => {
     const cls = j.score < 100 ? 'low' : j.score < 200 ? 'mid' : 'high';
-    return `<div class="score-row">
-      <span class="sname">${r===0?'🥇':r===1?'🥈':r===2?'🥉':`${r+1}.`} ${j.nom}</span>
-      <span class="sval ${cls}">${j.score}</span>
-    </div>`;
+    return `<div class="score-row"><span class="sname">${r===0?'🥇':r===1?'🥈':r===2?'🥉':`${r+1}.`} ${j.nom}</span><span class="sval ${cls}">${j.score}</span></div>`;
   }).join('');
   document.getElementById('pa-manche-n').textContent = PS.hist.length + 1;
 }
-
 function pValider() {
   const couleur = document.getElementById('pa-couleur').value;
   const scores  = Array.from({length: PS.n}, (_, i) => parseInt(document.getElementById(`pa-i-${i}`)?.value) || 0);
@@ -1172,13 +1138,11 @@ function pValider() {
   const btn   = document.getElementById('pa-valider'); if (btn) btn.disabled = true;
   pSave(); pRefreshUI();
 }
-
 function pTab(tab) {
   showScreen('papayoo-' + tab);
   if (tab === 'hist')  pRenderHist();
   if (tab === 'stats') pRenderStats();
 }
-
 function pRenderHist() {
   const div = document.getElementById('pa-hist-list');
   if (!PS.hist.length) { div.innerHTML = '<p style="color:#8e8e93;font-size:14px">Aucune manche pour l\'instant.</p>'; return; }
@@ -1193,33 +1157,20 @@ function pRenderHist() {
     }).join('')}</div>
   </div>`).join('');
 }
-
 function pDelHist(idx) {
-  const h = PS.hist[idx];
-  h.scores.forEach((s, i) => { if (PS.joueurs[i]) PS.joueurs[i].score -= s; });
-  PS.hist.splice(idx, 1);
-  pSave(); pRenderHist(); pRefreshUI();
+  const h = PS.hist[idx]; h.scores.forEach((s, i) => { if (PS.joueurs[i]) PS.joueurs[i].score -= s; });
+  PS.hist.splice(idx, 1); pSave(); pRenderHist(); pRefreshUI();
 }
-
 function pRenderStats() {
   drawGraph('pa-graph', PS.joueurs.slice(0, PS.n), PS.hist, null);
   const sorted = [...PS.joueurs].slice(0, PS.n).sort((a, b) => a.score - b.score);
   document.getElementById('pa-bilan').innerHTML = sorted.map((j, r) => `
     <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f2f2f7">
-      <div>
-        <div style="font-size:15px;font-weight:600">${['🥇','🥈','🥉'][r] || ''} ${j.nom}</div>
-        <div style="font-size:12px;color:#8e8e93">${j.nb} manche(s)</div>
-      </div>
+      <div><div style="font-size:15px;font-weight:600">${['🥇','🥈','🥉'][r] || ''} ${j.nom}</div><div style="font-size:12px;color:#8e8e93">${j.nb} manche(s)</div></div>
       <div style="font-size:17px;font-weight:700;color:${j.score < 100 ? '#34c759' : j.score < 200 ? '#FF9500' : '#ff3b30'}">${j.score} pts</div>
     </div>`).join('');
 }
-
-function pReset() {
-  PS.joueurs.forEach(j => { j.score = 0; j.nb = 0; });
-  PS.hist = [];
-  localStorage.removeItem('papayoo_save');
-  pRenderInputs(); pRefreshUI();
-}
+function pReset() { PS.joueurs.forEach(j => { j.score = 0; j.nb = 0; }); PS.hist = []; localStorage.removeItem('papayoo_save'); pRenderInputs(); pRefreshUI(); }
 </script>
 </body>
 </html>
